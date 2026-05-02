@@ -14,15 +14,21 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 env_path = Path(__file__).parent / ".env"
-load_dotenv(dotenv_path=env_path, override=True)
+# ── Load API key — works both locally and on Streamlit Cloud ──────
+load_dotenv(dotenv_path=Path(__file__).parent / ".env", override=True)
+
+# Check local .env first, then Streamlit Cloud secrets
+if not os.environ.get("GROQ_API_KEY"):
+    try:
+        os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
+    except Exception:
+        pass
 
 if not os.environ.get("GROQ_API_KEY"):
     st.set_page_config(page_title="Expert Oracle", page_icon="🧠")
     st.error(
         "### ❌ GROQ_API_KEY not found\n\n"
-        f"Make sure your `.env` file exists at: `{env_path}`\n\n"
-        "It should contain exactly one line:\n\n"
-        "```\nGROQ_API_KEY=your_key_here\n```"
+        "Add your key in Streamlit Cloud → App Settings → Secrets"
     )
     st.stop()
 
